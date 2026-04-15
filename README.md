@@ -36,7 +36,22 @@
 
 ## 🖥️ Скриншоты
 
-> Добавьте скриншоты вашего приложения в папку `screenshots/` и укажите ссылки здесь.
+> <img width="1918" height="673" alt="image" src="https://github.com/user-attachments/assets/833b7a22-df73-4f08-92d4-4d61ea13c3cb" />
+
+> <img width="643" height="486" alt="image" src="https://github.com/user-attachments/assets/672448c8-f9b8-4194-9c75-9bf6d64c632a" />
+> <img width="1308" height="584" alt="image" src="https://github.com/user-attachments/assets/d6071317-07d0-492d-aaf1-cee71c09f895" />
+> <img width="1156" height="776" alt="image" src="https://github.com/user-attachments/assets/c1301b97-6ddc-46a5-be67-0ad45dfd5e84" />
+> <img width="647" height="785" alt="image" src="https://github.com/user-attachments/assets/c20c949d-edd1-4f9e-9732-b332451617f0" />
+
+> <img width="1320" height="757" alt="image" src="https://github.com/user-attachments/assets/bf7df2f1-db9d-4890-8a55-5dd80644febf" />
+> <img width="1322" height="561" alt="image" src="https://github.com/user-attachments/assets/c8559dfc-990c-47ca-844c-db6dc3128f63" />
+> <img width="1320" height="474" alt="image" src="https://github.com/user-attachments/assets/571eb012-9e8b-4690-8479-bfce8cb4eb8f" />
+> <img width="650" height="609" alt="image" src="https://github.com/user-attachments/assets/892aee0e-2306-45e2-b7a7-9aa4f5a0b9a1" />
+> <img width="648" height="594" alt="image" src="https://github.com/user-attachments/assets/ca2d421e-9780-4fb6-905a-02fe15560188" />
+
+> <img width="356" height="421" alt="image" src="https://github.com/user-attachments/assets/ed336eca-6b38-4bf6-b594-0b2000618358" />
+> <img width="452" height="183" alt="image" src="https://github.com/user-attachments/assets/2a8daf96-3078-42f1-b84d-0b8d16d6744a" />
+> 
 
 ---
 
@@ -357,7 +372,7 @@ dotnet ef migrations remove
 
 ## 👤 Автор
 
-**AOtchik**
+**alexei-sttmyl**
 
 ---
 
