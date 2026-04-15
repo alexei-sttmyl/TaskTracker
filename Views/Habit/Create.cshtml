@@ -1,0 +1,80 @@
+﻿@model TaskTracker.Models.Habit
+
+@{
+    ViewData["Title"] = "Создать привычку";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">➕ Создать привычку</h4>
+            </div>
+            <div class="card-body">
+                <form asp-controller="Habit" asp-action="Create" method="post" asp-antiforgery="true">
+                    <div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display: none;"></div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-bold">Название <span class="text-danger">*</span></label>
+                        <input asp-for="Name" class="form-control" placeholder="Например: Читать книги" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-bold">Описание</label>
+                        <textarea asp-for="Description" class="form-control" rows="3"
+                                  placeholder="Опишите вашу привычку..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="DailyGoal" class="form-label fw-bold">Сколько раз в день</label>
+                            <input asp-for="DailyGoal" type="number" class="form-control" min="1" value="1" />
+                            <span asp-validation-for="DailyGoal" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="TargetDays" class="form-label fw-bold">Цель (дней)</label>
+                            <input asp-for="TargetDays" type="number" class="form-control" min="1" placeholder="30" />
+                            <span asp-validation-for="TargetDays" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="NotificationIntervalMinutes" class="form-label fw-bold">
+                            Интервал напоминаний (мин)
+                            <span class="text-muted ms-1" data-bs-toggle="tooltip" data-bs-placement="right"
+                                  title="По умолчанию 15 минут. Напоминания приходят, пока привычка не выполнена за день.">
+                                ⓘ
+                            </span>
+                        </label>
+                        <input asp-for="NotificationIntervalMinutes" type="number" class="form-control" min="1" max="1440" value="15" />
+                        <div class="form-text">Как часто напоминать о привычке, если она не выполнена</div>
+                        <span asp-validation-for="NotificationIntervalMinutes" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">✅ Создать</button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">← Назад к списку</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const summary = document.querySelector('[asp-validation-summary="All"]');
+            const errors = document.querySelectorAll('.text-danger');
+            if (summary && errors.length > 0) {
+                summary.style.display = 'block';
+            }
+            // Tooltips
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+        });
+    </script>
+}

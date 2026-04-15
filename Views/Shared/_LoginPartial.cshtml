@@ -1,0 +1,269 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using TaskTracker.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="navbar-nav">
+@if (SignInManager.IsSignedIn(User))
+{
+    var user = await UserManager.GetUserAsync(User);
+    var displayName = user?.GetDisplayName() ?? User.Identity?.Name;
+
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Profile" asp-action="Index" title="Профиль">
+            👤 @displayName
+        </a>
+    </li>
+    <li class="nav-item dropdown" id="notificationDropdownContainer">
+        <a class="nav-link dropdown-toggle" href="#" id="notificationBell" role="button"
+           data-bs-toggle="dropdown" aria-expanded="false" style="position:relative;">
+            <span id="bellIcon">🔔</span>
+            <span id="unreadBadge" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                  style="display:none; font-size:0.6rem;">0</span>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end p-0" aria-labelledby="notificationBell"
+            style="min-width: 350px; max-width: 400px; max-height: 450px;">
+            <li class="bg-light px-3 py-2 d-flex justify-content-between align-items-center border-bottom">
+                <strong>🔔 Уведомления</strong>
+                <button id="markAllReadBtn" class="btn btn-sm btn-outline-primary" style="display:none;">Прочитать все</button>
+            </li>
+            <li>
+                <div id="notificationList" style="overflow-y:auto; max-height:380px;">
+                    <div class="text-center py-4 text-muted">
+                        <small>Загрузка...</small>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="/">🚪 Выйти</a>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">📝 Регистрация</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">🔑 Войти</a>
+    </li>
+}
+</ul>
+
+<style>
+.notification-item {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+.notification-item.unread {
+    background-color: #e7f1ff;
+    border-left: 3px solid #0077cc;
+}
+.notification-item .notif-time {
+    font-size: 0.7rem;
+    color: #6c757d;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    let pollInterval = setInterval(loadNotifications, 3000);
+    let toastStack = [];
+    let toastIdCounter = 0;
+
+    // Загрузка уведомлений при открытии dropdown
+    const bell = document.getElementById('notificationBell');
+    if (bell) {
+        bell.addEventListener('show.bs.dropdown', loadNotifications);
+    }
+
+    function loadNotifications() {
+        fetch('/api/Notification/recent')
+            .then(r => r.json())
+            .then(data => {
+                // Обновить бейдж непрочитанных
+                const badge = document.getElementById('unreadBadge');
+                const bellIcon = document.getElementById('bellIcon');
+                if (data.unreadCount > 0) {
+                    badge.style.display = 'inline-block';
+                    badge.textContent = data.unreadCount > 9 ? '9+' : data.unreadCount;
+                    bellIcon.textContent = '🔔';
+                } else {
+                    badge.style.display = 'none';
+                    bellIcon.textContent = '🔕';
+                }
+
+                // Показать кнопку "Прочитать все"
+                const markAllBtn = document.getElementById('markAllReadBtn');
+                markAllBtn.style.display = data.unreadCount > 0 ? 'inline-block' : 'none';
+                markAllBtn.onclick = () => markAllRead();
+
+                // Список уведомлений
+                const list = document.getElementById('notificationList');
+                if (data.notifications.length === 0) {
+                    list.innerHTML = '<div class="text-center py-4 text-muted"><small>Нет уведомлений за 30 дней</small></div>';
+                    return;
+                }
+
+                list.innerHTML = data.notifications.map(n => {
+                    let icon = n.type === 'Reminder' ? '⏰' : n.type === 'Success' ? '✅' : n.type === 'Streak' ? '🔥' : 'ℹ️';
+                    return `<div class="notification-item ${!n.isRead ? 'unread' : ''}"
+                                 onclick="onNotificationClick(${n.id}, ${n.habitId || 'null'})">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <span>${icon}</span>
+                                <small>${n.message}</small>
+                            </div>
+                            <span class="notif-time">${n.createdAt}</span>
+                        </div>
+                    </div>`;
+                }).join('');
+            })
+            .catch(() => {});
+    }
+
+    // Клик по уведомлению → отметить + перейти к деталям
+    window.onNotificationClick = function(id, habitId) {
+        fetch(`/api/Notification/${id}/read`, { method: 'POST' });
+        if (habitId) {
+            window.location.href = `/Habit/Details/${habitId}`;
+        }
+    };
+
+    function markAllRead() {
+        fetch('/api/Notification/mark-all-read', { method: 'POST' })
+            .then(() => loadNotifications());
+    }
+
+    // Toast-уведомления (всплывающие, правый нижний угол)
+    window.showToastNotification = function(message, habitId, type) {
+        const toast = document.createElement('div');
+        const id = ++toastIdCounter;
+        toast.id = 'toast-' + id;
+
+        let bgColor, padding, extraHTML;
+        if (type === 'Achievement') {
+            // Красочное поздравление
+            bgColor = 'linear-gradient(135deg, rgba(255, 193, 7, 0.95), rgba(255, 107, 53, 0.95), rgba(220, 53, 69, 0.95))';
+            padding = '16px 20px';
+            extraHTML = '<div style="font-size:1.5rem;margin-top:4px;">🏆🎉🔥</div>';
+        } else if (type === 'Reminder') {
+            bgColor = 'rgba(255, 193, 7, 0.9)';
+            padding = '12px 16px';
+            extraHTML = '';
+        } else {
+            // Минималистичное (Success)
+            bgColor = 'rgba(40, 167, 69, 0.85)';
+            padding = '8px 14px';
+            extraHTML = '';
+        }
+
+        toast.style.cssText = `
+            position: fixed;
+            right: 20px;
+            bottom: ${20 + toastStack.length * (type === 'Achievement' ? 120 : 80)}px;
+            z-index: 10000;
+            min-width: ${type === 'Achievement' ? '300px' : '280px'};
+            max-width: 420px;
+            padding: ${padding};
+            background: ${bgColor};
+            color: #fff;
+            border-radius: 0.75rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            backdrop-filter: blur(10px);
+            cursor: pointer;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.3s ease, transform 0.3s ease, bottom 0.3s ease;
+            font-size: ${type === 'Achievement' ? '1rem' : '0.9rem'};
+            font-weight: ${type === 'Achievement' ? '700' : '500'};
+            text-align: ${type === 'Achievement' ? 'center' : 'left'};
+        `;
+
+        toast.innerHTML = `
+            ${extraHTML}
+            <div class="d-flex justify-content-between align-items-start">
+                <div style="flex:1;" onclick="onToastClick(${id}, ${habitId})">
+                    ${type === 'Achievement' ? message : (type === 'Reminder' ? '⏰ ' : '✅ ') + message}
+                </div>
+                <span onclick="closeToast(${id})" style="margin-left:8px;cursor:pointer;font-size:1.1rem;line-height:1;flex-shrink:0;">✕</span>
+            </div>
+            ${type === 'Achievement' ? '<div style="font-size:1.5rem;margin-top:4px;">🎊🥳🌟</div>' : ''}
+        `;
+        document.body.appendChild(toast);
+        toastStack.push(id);
+
+        requestAnimationFrame(() => {
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateY(0)';
+        });
+
+        // Дольше показывать для достижений
+        setTimeout(() => closeToast(id), type === 'Achievement' ? 15000 : 10000);
+    };
+
+    window.onToastClick = function(id, habitId) {
+        // Отметить как прочитанное
+        fetch(`/api/Notification/${id}/read`, { method: 'POST' }).catch(() => {});
+        if (habitId) {
+            window.location.href = `/Habit/Details/${habitId}`;
+        }
+    };
+
+    window.closeToast = function(id) {
+        // Отметить как прочитанное
+        fetch(`/api/Notification/${id}/read`, { method: 'POST' }).catch(() => {});
+
+        const toast = document.getElementById('toast-' + id);
+        if (!toast) return;
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            toast.remove();
+            toastStack = toastStack.filter(tid => tid !== id);
+            // Запоминаем что показали этот toast
+            shownToasts.push(id);
+            sessionStorage.setItem('shownToasts', JSON.stringify(shownToasts));
+            // Пересчитать позиции
+            toastStack.forEach((tid, i) => {
+                const el = document.getElementById('toast-' + tid);
+                if (el) el.style.bottom = (20 + i * 80) + 'px';
+            });
+        }, 300);
+    };
+
+    // Toast-уведомления — показываются только по интервалу, не при каждом обновлении
+    let shownToasts = JSON.parse(sessionStorage.getItem('shownToasts') || '[]');
+    let toastsChecked = new Set(shownToasts);
+
+    function checkPendingToasts() {
+        fetch('/api/Notification/pending-toasts')
+            .then(r => r.json())
+            .then(data => {
+                // Фильтруем уже показанные
+                const newToasts = data.filter(n => !toastsChecked.has(n.id));
+                newToasts.forEach((n, i) => {
+                    toastsChecked.add(n.id);
+                    setTimeout(() => {
+                        showToastNotification(n.message, n.habitId, n.type);
+                    }, i * 600);
+                });
+            })
+            .catch(() => {});
+    }
+
+    // Проверять каждые 15 секунд
+    setInterval(checkPendingToasts, 15000);
+    // Первая проверка через 2 секунды после загрузки
+    setTimeout(checkPendingToasts, 2000);
+
+    // Инициализация dropdown
+    loadNotifications();
+});
+</script>

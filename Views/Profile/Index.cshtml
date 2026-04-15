@@ -1,0 +1,267 @@
+@model TaskTracker.ViewModels.UserProfileViewModel
+@using TaskTracker.ViewModels
+
+@{
+    ViewData["Title"] = "Профиль";
+    var stats = ViewData["Stats"] as TaskTracker.ViewModels.HabitStatsViewModel;
+    var initial = Model.Email.Length > 0 ? Model.Email[0].ToString().ToUpper() : "?";
+}
+
+<div class="mb-3">
+    <a asp-controller="Habit" asp-action="Index" class="btn btn-outline-secondary">← Назад к привычкам</a>
+</div>
+
+<div class="row pb-5 mb-4">
+    <!-- Информация о пользователе -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">👤 Профиль</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="profile-avatar mx-auto mb-3">@initial</div>
+                <h5 class="mb-1">@Model.Email</h5>
+                <p class="text-muted small">Участник с @Model.MemberSince.ToString("MMMM yyyy")</p>
+
+                <div class="row text-center mt-4">
+                    <div class="col-4">
+                        <div class="fw-bold fs-4 text-primary">@Model.TotalHabits</div>
+                        <small class="text-muted">привычек</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold fs-4 text-success">@Model.TotalCompletions</div>
+                        <small class="text-muted">выполнений</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold fs-4 text-danger">🔥 @Model.LongestStreak</div>
+                        <small class="text-muted">лучший streak</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Действия -->
+        <div class="card shadow mt-3">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">⚙️ Управление аккаунтом</h6>
+
+                <div class="d-grid gap-2">
+                    <a asp-area="Identity" asp-page="/Account/Manage/Index" class="btn btn-outline-primary">
+                        ⚙️ Настройки аккаунта
+                    </a>
+
+                    <form asp-controller="Profile" asp-action="SendTestNotification" method="post">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-outline-warning w-100">
+                            📬 Отправить тестовое уведомление
+                        </button>
+                    </form>
+
+                    <a asp-controller="Profile" asp-action="ExportToExcel" class="btn btn-outline-success">
+                        📊 Выгрузить отчёт в Excel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика и уведомления -->
+    <div class="col-lg-8">
+        <!-- Уведомления -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">🔔 Уведомления на сегодня</h5>
+                <span class="badge bg-dark">@Model.Notifications.Count</span>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.Notifications.Count == 0)
+                {
+                    <div class="text-center py-4 text-muted">
+                        <p class="mb-0">Нет уведомлений</p>
+                    </div>
+                }
+                else
+                {
+                    @foreach (var notification in Model.Notifications)
+                    {
+                        <div class="notification-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    @if (notification.Type == "Reminder")
+                                    {
+                                        <span class="badge bg-warning text-dark me-2">Напоминание</span>
+                                    }
+                                    else if (notification.Type == "Success")
+                                    {
+                                        <span class="badge bg-success me-2">Готово</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-info me-2">Инфо</span>
+                                    }
+                                    <span>@notification.Message</span>
+                                </div>
+                                <span class="notification-time">@notification.Timestamp.ToString("dd.MM.yyyy HH:mm")</span>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+
+        <!-- Статистика -->
+        @if (stats != null)
+        {
+            <!-- Обзор -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6">
+                    <div class="card text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="fs-2 fw-bold text-primary">@stats.CompletionRate%</div>
+                            <small class="text-muted">выполнено сегодня</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="fs-2 fw-bold text-success">@stats.CompletedToday</div>
+                            <small class="text-muted">целей достигнуто</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="fs-2 fw-bold text-warning">🔥 @stats.BestStreak</div>
+                            <small class="text-muted">@stats.BestStreakHabitName</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="card text-center border-0 shadow-sm">
+                        <div class="card-body">
+                            <div class="fs-2 fw-bold text-info">@stats.TotalHabits</div>
+                            <small class="text-muted">всего привычек</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- График прогресса за 7 дней -->
+            <div class="card shadow mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">📈 Прогресс за 7 дней</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="weeklyProgressChart" height="200"
+                            data-stats="@System.Text.Json.JsonSerializer.Serialize(stats.Last7Days)">
+                    </canvas>
+                </div>
+            </div>
+
+            <!-- Прогресс привычек -->
+            <div class="card shadow mb-5">
+                <div class="card-header">
+                    <h5 class="mb-0">🎯 Прогресс привычек сегодня</h5>
+                </div>
+                <div class="card-body">
+                    @if (stats.CategoryProgress.Count == 0)
+                    {
+                        <p class="text-muted text-center">Нет привычек</p>
+                    }
+                    else
+                    {
+                        @foreach (var cp in stats.CategoryProgress)
+                        {
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <strong class="chart-habit-name">@cp.HabitName</strong>
+                                    <span>@cp.TodayCount / @cp.DailyGoal (@cp.CompletionPercent%)</span>
+                                </div>
+                                <div class="progress" style="height: 12px;">
+                                    <div class="progress-bar @(cp.CompletionPercent >= 100 ? "bg-success" : "bg-warning")"
+                                         role="progressbar" style="width: @cp.CompletionPercent%">
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const canvas = document.getElementById('weeklyProgressChart');
+            if (canvas) {
+                const stats = JSON.parse(canvas.getAttribute('data-stats'));
+                const ctx = canvas.getContext('2d');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: stats.map(s => s.dayLabel),
+                        datasets: [{
+                            label: 'Выполнено привычек',
+                            data: stats.map(s => s.completed),
+                            borderColor: '#0077cc',
+                            backgroundColor: 'rgba(0, 119, 204, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#0077cc',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }, {
+                            label: 'Всего привычек',
+                            data: stats.map(s => s.total),
+                            borderColor: '#dee2e6',
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0,
+                            pointRadius: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { position: 'top' },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y + ' шт.';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1,
+                                    callback: function(value) { return value + ' шт.'; }
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Количество привычек (шт.)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Дата (дд.мм)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}

@@ -1,0 +1,59 @@
+@model TaskTracker.ViewModels.HabitViewModel
+
+@{
+    ViewData["Title"] = "Удалить привычку";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow border-danger">
+            <div class="card-header bg-danger text-white">
+                <h4 class="mb-0">⚠️ Удаление привычки</h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <strong>Внимание!</strong> Это действие необратимо. Все данные и история выполнений будут удалены.
+                </div>
+
+                <h5 class="mb-3">Вы уверены, что хотите удалить эту привычку?</h5>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">@Model.Name</h5>
+                        @if (!string.IsNullOrEmpty(Model.Description))
+                        {
+                            <p class="card-text text-muted">@Model.Description</p>
+                        }
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted">Streak</small>
+                                <div class="fw-bold">🔥 @Model.Streak дн.</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Всего</small>
+                                <div class="fw-bold">@Model.TotalCompletions</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Начало</small>
+                                <div class="fw-bold">@Model.StartDate.ToString("dd.MM.yyyy")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <form asp-controller="Habit" asp-action="Delete" asp-route-id="@Model.Id" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            🗑️ Удалить безвозвратно
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                            ← Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

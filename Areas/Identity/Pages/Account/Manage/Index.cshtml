@@ -1,0 +1,99 @@
+@page
+@model TaskTracker.Areas.Identity.Pages.Account.Manage.IndexModel
+
+@{
+    ViewData["Title"] = "Настройки аккаунта";
+}
+
+<div class="mb-3">
+    <a asp-controller="Profile" asp-action="Index" class="btn btn-outline-secondary">← Назад в профиль</a>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">⚙️ Настройки аккаунта</h4>
+            </div>
+            <div class="card-body">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        @TempData["SuccessMessage"]
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                }
+
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                    <h5 class="fw-bold mb-3">👤 Личная информация</h5>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.FirstName" class="form-label">Имя</label>
+                            <input asp-for="Input.FirstName" class="form-control" />
+                            <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.LastName" class="form-label">Фамилия</label>
+                            <input asp-for="Input.LastName" class="form-control" />
+                            <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.Patronymic" class="form-label">Отчество</label>
+                            <input asp-for="Input.Patronymic" class="form-control" />
+                            <span asp-validation-for="Input.Patronymic" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.Nickname" class="form-label">Ник (псевдоним)</label>
+                            <input asp-for="Input.Nickname" class="form-control" placeholder="Как к вам обращаться" />
+                            <span asp-validation-for="Input.Nickname" class="text-danger"></span>
+                            <div class="form-text">Используется для приветствия и в уведомлениях</div>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <h5 class="fw-bold mb-3">🔒 Безопасность</h5>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.Email" class="form-label">Email (не изменяется)</label>
+                        <input asp-for="Input.Email" class="form-control" disabled />
+                        <div class="form-text">Email нельзя изменить. Для смены обратитесь к администратору.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Input.CurrentPassword" class="form-label">Текущий пароль</label>
+                        <input asp-for="Input.CurrentPassword" class="form-control" autocomplete="current-password" />
+                        <span asp-validation-for="Input.CurrentPassword" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.NewPassword" class="form-label">Новый пароль</label>
+                            <input asp-for="Input.NewPassword" class="form-control" autocomplete="new-password" />
+                            <span asp-validation-for="Input.NewPassword" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Input.ConfirmPassword" class="form-label">Подтвердите новый пароль</label>
+                            <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" />
+                            <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg">💾 Сохранить изменения</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

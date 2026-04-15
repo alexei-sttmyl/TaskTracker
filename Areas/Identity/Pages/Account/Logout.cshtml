@@ -1,0 +1,30 @@
+@page
+@model TaskTracker.Areas.Identity.Pages.Account.LogoutModel
+
+@{
+    ViewData["Title"] = "Выход";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow text-center">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">🚪 Выход из аккаунта</h4>
+            </div>
+            <div class="card-body py-5">
+                <h5 class="mb-3">Вы действительно хотите выйти?</h5>
+                <form method="post">
+                    <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+                    @if (User.Identity?.IsAuthenticated == true)
+                    {
+                        <p class="text-muted mb-3">Вы вошли как <strong>@User.Identity.Name</strong></p>
+                    }
+                    <div class="d-grid gap-2 d-flex justify-content-center">
+                        <button type="submit" class="btn btn-warning btn-lg">Выйти</button>
+                        <a href="/" class="btn btn-outline-secondary btn-lg">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

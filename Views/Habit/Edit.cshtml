@@ -1,0 +1,78 @@
+@model TaskTracker.ViewModels.HabitViewModel
+
+@{
+    ViewData["Title"] = "Редактировать привычку";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">✏️ Редактировать привычку</h4>
+            </div>
+            <div class="card-body">
+                <form asp-controller="Habit" asp-action="Edit" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden" asp-for="Id" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger d-none" role="alert"></div>
+
+                    <div class="mb-3">
+                        <label for="Name" class="form-label fw-bold">Название <span class="text-danger">*</span></label>
+                        <input id="Name" name="Name" value="@Model.Name" class="form-control" required />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="Description" class="form-label fw-bold">Описание</label>
+                        <textarea id="Description" name="Description" class="form-control" rows="3">@Model.Description</textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="DailyGoal" class="form-label fw-bold">Сколько раз в день</label>
+                            <input id="DailyGoal" name="DailyGoal" type="number" value="@Model.DailyGoal"
+                                   class="form-control" min="1" />
+                            <span asp-validation-for="DailyGoal" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="TargetDays" class="form-label fw-bold">Цель (дней)</label>
+                            <input id="TargetDays" name="TargetDays" type="number" value="@(Model.TargetDays?.ToString() ?? "")"
+                                   class="form-control" min="1" />
+                            <span asp-validation-for="TargetDays" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Информация только для чтения -->
+                    <div class="alert alert-light border">
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <small class="text-muted">Streak</small>
+                                <div class="fw-bold">🔥 @Model.Streak</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Всего</small>
+                                <div class="fw-bold">@Model.TotalCompletions</div>
+                            </div>
+                            <div class="col-4">
+                                <small class="text-muted">Начало</small>
+                                <div class="fw-bold">@Model.StartDate.ToString("dd.MM.yyyy")</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning btn-lg">💾 Сохранить</button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">← Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

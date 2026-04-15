@@ -1,0 +1,230 @@
+﻿@model List<TaskTracker.ViewModels.HabitViewModel>
+
+@{
+    ViewData["Title"] = "Мои привычки";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">📋 Мои привычки</h1>
+    <a asp-controller="Habit" asp-action="Create" class="btn btn-primary btn-lg">
+        ➕ Добавить привычку
+    </a>
+</div>
+
+@if (Model == null || Model.Count == 0)
+{
+    <div class="alert alert-info text-center" role="alert">
+        <h4>У вас пока нет привычек</h4>
+        <p class="mb-0">Нажмите кнопку «Добавить привычку», чтобы начать отслеживание!</p>
+    </div>
+}
+else
+{
+    <div class="row g-3 mb-4">
+        @foreach (var habit in Model)
+        {
+            var progressPercent = habit.DailyGoal > 0 ? Math.Min(100, (int)((double)habit.TodayCount / habit.DailyGoal * 100)) : 0;
+            var progressColor = progressPercent >= 100 ? "bg-success" : progressPercent > 0 ? "bg-warning" : "bg-secondary";
+            var streakColor = habit.Streak >= 7 ? "text-danger fw-bold" : habit.Streak >= 3 ? "text-warning fw-bold" : "text-muted";
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">@habit.Name</h5>
+                        <span class="badge @(habit.TodayCount >= habit.DailyGoal ? "bg-success" : "bg-secondary")">
+                            @(habit.TodayCount >= habit.DailyGoal ? "✅" : "⏳")
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Сегодня</span>
+                                <span>@habit.TodayCount / @habit.DailyGoal</span>
+                            </div>
+                            <div class="progress" style="height: 20px;">
+                                <div class="progress-bar @progressColor" role="progressbar"
+                                     style="width: @progressPercent%"
+                                     aria-valuenow="@progressPercent" aria-valuemin="0" aria-valuemax="100">
+                                    @progressPercent%
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <div class="fw-bold fs-4 @streakColor">🔥 @habit.Streak</div>
+                                <small class="text-muted">дней подряд</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold fs-4 text-primary">@habit.TotalCompletions</div>
+                                <small class="text-muted">всего</small>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-bold fs-4 text-info">🎯 @habit.DailyGoal</div>
+                                <small class="text-muted">цель/день</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100" role="group">
+                            <a asp-action="Complete" asp-route-id="@habit.Id" class="btn btn-sm btn-outline-success">
+                                ✅ Выполнить
+                            </a>
+                            <a asp-action="Details" asp-route-id="@habit.Id" class="btn btn-sm btn-outline-primary">
+                                📊 Детали
+                            </a>
+                            <a asp-action="Calendar" asp-route-id="@habit.Id" class="btn btn-sm btn-outline-info">
+                                📅 Календарь
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@habit.Id" class="btn btn-sm btn-outline-secondary">
+                                ✏️
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Два графика -->
+    <div class="row g-4 mb-4 chart-container">
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">📊 Всего выполнений по привычкам</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="totalChart" height="250"
+                            data-habits="@System.Text.Json.JsonSerializer.Serialize(Model.Select(h => new { name = h.Name, total = h.TotalCompletions }))">
+                    </canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-header">
+                    <h5 class="mb-0">🔥 Streak — серия дней подряд</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="streakChart" height="250"
+                            data-habits="@System.Text.Json.JsonSerializer.Serialize(Model.Select(h => new { name = h.Name, streak = h.Streak }))">
+                    </canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Chart 1: Total completions
+            const canvas1 = document.getElementById('totalChart');
+            if (canvas1) {
+                const habits = JSON.parse(canvas1.getAttribute('data-habits'));
+                const ctx1 = canvas1.getContext('2d');
+
+                const colors = [
+                    'rgba(54, 162, 235, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(75, 192, 192, 0.7)',
+                    'rgba(255, 206, 86, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)',
+                    'rgba(83, 102, 255, 0.7)', 'rgba(40, 167, 69, 0.7)', 'rgba(220, 53, 69, 0.7)'
+                ];
+                const borders = colors.map(c => c.replace('0.7', '1'));
+
+                new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: habits.map(h => h.name),
+                        datasets: [{
+                            label: 'Всего выполнений (шт.)',
+                            data: habits.map(h => h.total),
+                            backgroundColor: colors.slice(0, habits.length),
+                            borderColor: borders.slice(0, habits.length),
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            borderSkipped: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => 'Выполнений: ' + ctx.parsed.y + ' шт.'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1, callback: v => v + ' шт.' },
+                                title: { display: true, text: 'Количество выполнений (шт.)' }
+                            },
+                            x: {
+                                ticks: {
+                                    font: { family: "'Playfair Display', serif", size: 13, weight: '600' },
+                                    maxRotation: 45
+                                },
+                                title: { display: true, text: 'Привычка' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Chart 2: Streaks
+            const canvas2 = document.getElementById('streakChart');
+            if (canvas2) {
+                const habits = JSON.parse(canvas2.getAttribute('data-habits'));
+                const ctx2 = canvas2.getContext('2d');
+
+                new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: habits.map(h => h.name),
+                        datasets: [{
+                            label: 'Серия дней (дней)',
+                            data: habits.map(h => h.streak),
+                            borderColor: '#dc3545',
+                            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointBackgroundColor: '#dc3545',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: ctx => 'Серия: ' + ctx.parsed.y + ' дней'
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: { stepSize: 1, callback: v => v + ' дн.' },
+                                title: { display: true, text: 'Дней подряд (дн.)' }
+                            },
+                            x: {
+                                ticks: {
+                                    font: { family: "'Playfair Display', serif", size: 13, weight: '600' },
+                                    maxRotation: 45
+                                },
+                                title: { display: true, text: 'Привычка' }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}

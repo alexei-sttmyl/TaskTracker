@@ -1,0 +1,293 @@
+/* TaskTracker Custom Styles */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap');
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f9fa;
+}
+
+@media (min-width: 768px) {
+    body {
+        font-size: 16px;
+    }
+}
+
+/* Main content */
+main {
+    min-height: calc(100vh - 140px);
+    margin-bottom: 2rem;
+}
+
+/* Focus styles */
+:focus {
+    box-shadow: 0 0 0 0.2rem rgba(0, 119, 204, 0.25);
+    outline: none;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+}
+
+.nav-link {
+    font-weight: 500;
+    transition: color 0.15s ease-in-out;
+}
+
+.nav-link:hover {
+    color: #0077cc !important;
+}
+
+/* Notification dropdown in navbar */
+.notification-badge {
+    position: relative;
+    cursor: pointer;
+}
+
+.notification-badge .badge-count {
+    position: absolute;
+    top: -5px;
+    right: -8px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    font-size: 10px;
+    line-height: 18px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 0.75rem;
+    transition: transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    border-radius: 0.75rem 0.75rem 0 0 !important;
+}
+
+/* Chart cards — extra space below */
+.chart-container {
+    margin-bottom: 2rem;
+}
+
+.chart-container canvas {
+    max-height: 300px;
+}
+
+/* Habit name on chart */
+.chart-habit-name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+}
+
+/* Progress bars */
+.progress {
+    border-radius: 0.5rem;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-lg {
+    padding: 0.75rem 1.5rem;
+}
+
+/* Table styles */
+.table td, .table th {
+    vertical-align: middle;
+}
+
+/* Calendar */
+table.table-bordered td {
+    min-height: 50px;
+    vertical-align: middle;
+    text-align: center;
+    transition: background-color 0.15s ease-in-out;
+}
+
+table.table-bordered td:hover {
+    filter: brightness(0.95);
+}
+
+/* Alerts */
+.alert {
+    border-radius: 0.5rem;
+}
+
+/* Badges */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* Form controls */
+.form-control:focus {
+    border-color: #0077cc;
+}
+
+/* Empty state */
+.alert-info {
+    background-color: #e7f1ff;
+    border-color: #b3d4ff;
+    color: #084298;
+}
+
+/* Stats cards */
+.border.rounded.p-3 {
+    background-color: #fff;
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.border.rounded.p-3:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Streak animations */
+.text-danger.fw-bold {
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+/* Notification dropdown */
+.notification-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    min-width: 320px;
+    max-width: 400px;
+    max-height: 400px;
+    overflow-y: auto;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    z-index: 1050;
+    display: none;
+}
+
+.notification-dropdown.show {
+    display: block;
+}
+
+.notification-item {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.15s;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-item:last-child {
+    border-bottom: none;
+}
+
+.notification-time {
+    font-size: 0.75rem;
+    color: #6c757d;
+}
+
+/* Profile page */
+.profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 576px) {
+    .card-body .fs-2 {
+        font-size: 1.5rem !important;
+    }
+
+    .btn-group .btn {
+        font-size: 0.75rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .notification-dropdown {
+        min-width: 280px;
+        right: -50px;
+    }
+}
+
+/* Toast notification — поверх всего контента */
+.toast-notification {
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    min-width: 300px;
+    max-width: 500px;
+    padding: 12px 24px;
+    background: rgba(40, 167, 69, 0.92);
+    color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    font-weight: 500;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.toast-notification.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast-notification.hide {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+}
+
+/* Validation */
+.input-validation-error {
+    border-color: #dc3545 !important;
+}
+
+.field-validation-error {
+    display: block;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.text-danger {
+    font-size: 0.875rem;
+}

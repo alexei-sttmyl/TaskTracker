@@ -1,0 +1,125 @@
+﻿@model TaskTracker.ViewModels.HabitCalendarViewModel
+
+@{
+    ViewData["Title"] = "Календарь — " + Model.HabitName;
+
+    var now = Model.ViewDate;
+    var year = now.Year;
+    var month = now.Month;
+    var daysInMonth = DateTime.DaysInMonth(year, month);
+    var monthName = now.ToString("MMMM yyyy");
+    var firstDayOfWeek = (int)new DateTime(year, month, 1).DayOfWeek;
+    // Adjust: Monday = 0
+    firstDayOfWeek = (firstDayOfWeek + 6) % 7;
+
+    var prevMonth = now.AddMonths(-1);
+    var nextMonth = now.AddMonths(1);
+    var canGoNext = !(year == DateTime.Now.Year && month == DateTime.Now.Month);
+}
+
+<div class="mb-3">
+    <a asp-action="Details" asp-route-id="@Model.HabitId" class="btn btn-outline-secondary">← Назад к деталям</a>
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-info text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="mb-0">📅 @Model.HabitName</h4>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Навигация по месяцам -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a asp-action="Calendar" asp-route-id="@Model.HabitId" asp-route-year="@prevMonth.Year" asp-route-month="@prevMonth.Month"
+               class="btn btn-outline-primary">
+                ◀ @prevMonth.ToString("MMMM")
+            </a>
+            <h5 class="mb-0">@monthName</h5>
+            @if (canGoNext)
+            {
+                <a asp-action="Calendar" asp-route-id="@Model.HabitId" asp-route-year="@nextMonth.Year" asp-route-month="@nextMonth.Month"
+                   class="btn btn-outline-primary">
+                    @nextMonth.ToString("MMMM") ▶
+                </a>
+            }
+            else
+            {
+                <span class="btn btn-outline-secondary disabled">@nextMonth.ToString("MMMM") ▶</span>
+            }
+        </div>
+
+        <!-- Легенда -->
+        <div class="mb-3 d-flex gap-3 justify-content-center">
+            <span><span class="badge bg-success">&nbsp;</span> Цель достигнута</span>
+            <span><span class="badge bg-warning text-dark">&nbsp;</span> Частично</span>
+            <span><span class="badge bg-secondary">&nbsp;</span> Не выполнено</span>
+        </div>
+
+        <!-- Календарная сетка -->
+        <div class="table-responsive">
+            <table class="table table-bordered text-center mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Пн</th><th>Вт</th><th>Ср</th><th>Чт</th><th>Пт</th><th>Сб</th><th>Вс</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var totalCells = firstDayOfWeek + daysInMonth;
+                        var rows = (int)Math.Ceiling((double)totalCells / 7);
+
+                        for (int row = 0; row < rows; row++)
+                        {
+                            <tr>
+                                @for (int col = 0; col < 7; col++)
+                                {
+                                    var cellIndex = row * 7 + col;
+                                    var dayNum = cellIndex - firstDayOfWeek + 1;
+
+                                    if (cellIndex < firstDayOfWeek || dayNum > daysInMonth)
+                                    {
+                                        <td class="table-light text-muted">—</td>
+                                    }
+                                    else
+                                    {
+                                        var date = new DateTime(year, month, dayNum);
+                                        var log = Model.Logs.FirstOrDefault(l => l.Date.Date == date.Date);
+                                        var count = log?.CompletionCount ?? 0;
+
+                                        string cellClass;
+                                        string badgeText = dayNum.ToString();
+
+                                        if (count >= Model.DailyGoal)
+                                        {
+                                            cellClass = "table-success fw-bold";
+                                            badgeText = $"{dayNum}<br/>✅ {count}";
+                                        }
+                                        else if (count > 0)
+                                        {
+                                            cellClass = "table-warning";
+                                            badgeText = $"{dayNum}<br/>⏳ {count}";
+                                        }
+                                        else
+                                        {
+                                            cellClass = "";
+                                        }
+
+                                        var isToday = date.Date == DateTime.Now.Date;
+                                        if (isToday)
+                                        {
+                                            cellClass += " border-primary border-2";
+                                        }
+
+                                        <td class="@cellClass" style="min-width: 60px; min-height: 50px; vertical-align: middle;">
+                                            @Html.Raw(badgeText)
+                                        </td>
+                                    }
+                                }
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
